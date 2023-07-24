@@ -1,4 +1,6 @@
-use std::{ops::Index, collections::HashMap};
+use std::{ops::Index, collections::HashMap, io::{stdout, stdin, Write}};
+
+use scraper::Selector;
 
 pub fn fetch_page(url: String) -> Result<String, String> {
     match reqwest::blocking::get(url) {
@@ -20,4 +22,20 @@ pub fn create_search_url(args: &Vec<String>, kwargs: &HashMap<String, String>) -
 
     println!("{}", url);
     url
+}
+
+pub fn create_selector(selector: &str) -> Selector {
+    scraper::Selector::parse(selector).unwrap()
+}
+
+pub fn print_border() {
+    println!("{}", "=".repeat(16));
+}
+
+pub fn input() -> String {
+    let mut input: String = String::new();
+    stdout().flush().unwrap();
+    let _ = stdin().read_line(&mut input);
+
+    input
 }
