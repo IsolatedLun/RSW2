@@ -2,9 +2,10 @@ use std::vec;
 
 use scraper::{Html, ElementRef};
 
+use crate::_STATE;
 use crate::cli::InputParser;
 use crate::commands::Command;
-use crate::utils::{fetch_page, create_search_url, create_selector, print_border, input};
+use crate::utils::{fetch_page, create_search_url, create_selector, print_border, input, split_text_to_numbers};
 
 pub struct SearchCommand {
     parsed_input: InputParser
@@ -18,8 +19,8 @@ impl Command<(String, Vec<String>)> for SearchCommand {
     }
 
     fn assert(&self) -> Result<(), String> {
-        if self.parsed_input.args.len() < 1 {
-            return Err(String::from("Insufficient argument: No query"));
+        if self.parsed_input.args.len() < 2 {
+            return Err(String::from(">> Insufficient arguments"));
         }
 
         Ok(())
@@ -31,9 +32,13 @@ impl Command<(String, Vec<String>)> for SearchCommand {
             return Err(assertion.unwrap_err());
         }
 
-        let html: Result<Html, String> = match fetch_page(
-            create_search_url(&self.parsed_input.args, &self.parsed_input.options)
-        ) {
+        let url = create_search_url(&self.parsed_input.args, 
+            &self.parsed_input.options);
+        if url.is_err() {
+            return Err(url.unwrap_err());
+        }
+        
+        let html: Result<Html, String> = match fetch_page(url.unwrap()) {
             Ok(content) => Ok(scraper::Html::parse_document(&content)),
             Err(e) => Err(e) 
         };
@@ -42,6 +47,13 @@ impl Command<(String, Vec<String>)> for SearchCommand {
             return Err(html.unwrap_err());
         }
         let html = html.unwrap();
+
+        let app_name_selector = create_selector(".apphub_AppName");
+        let app_name: String = html.select(&app_name_selector).next().unwrap().text().collect();
+        match self.parsed_input.args[0].chars().all(char::is_numeric) {
+            true => _STATE.lock().unwrap().set_alias(self.parsed_input.args[0].clone(), app_name),
+            false => ()
+        };
         
         let workshop_item_selector = create_selector(".workshopItem");
         let workshop_items: Vec<ElementRef> = html.select(&workshop_item_selector).collect();
@@ -59,18 +71,25 @@ impl SearchCommand {
         print!("Select by indexes > ");
 
         let _input = input();
-        let selected_indexes: Vec<usize> = match _input.contains(",") {
-            true => _input.split(",").map(|x| x.trim().parse::<usize>().unwrap()).collect::<Vec<usize>>(),
-            false => _input.split(" ").map(|x| x.trim().parse::<usize>().unwrap()).collect::<Vec<usize>>()
-        };
+        if _input.trim().len() == 0 {
+            return Ok(vec![]);
+        }
 
-        let max_selected_idx = *selected_indexes.iter().max().unwrap();
+        let selected_indexes: Result<Vec<usize>, String> = match _input.contains(",") {
+            true => split_text_to_numbers(_input, String::from(",")),
+            false => split_text_to_numbers(_input, String::from(" "))
+        };
+        if selected_indexes.is_err() {
+            return Err(format!(">> {}", selected_indexes.unwrap_err()));
+        }
+
+        let max_selected_idx = *selected_indexes.clone().unwrap().iter().max().unwrap();
         if max_selected_idx > ids.len() {
-            return Err::<Vec<String>, String>(format!("Index '{}' out of range", max_selected_idx));
+            return Err(format!(">> Index <{}> out of range", max_selected_idx));
         }
 
         let mut selected_ids: Vec<String> = vec![];
-        selected_indexes.into_iter().for_each(|idx| selected_ids.push(ids[idx].clone()));
+        selected_indexes.unwrap().into_iter().for_each(|idx| selected_ids.push(ids[idx].clone()));
     
         Ok(selected_ids)
     }

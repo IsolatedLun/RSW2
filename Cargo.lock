@@ -6,10 +6,13 @@ version = 3
 name = "RSW_2"
 version = "0.1.0"
 dependencies = [
+ "once_cell",
  "rand 0.8.5",
  "reqwest",
  "sccache",
  "scraper",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
