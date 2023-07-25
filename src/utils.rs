@@ -1,4 +1,4 @@
-use std::{collections::HashMap, io::{stdout, stdin, Write}};
+use std::{collections::HashMap, io::{stdout, stdin, Write}, path::PathBuf, fs};
 
 use scraper::Selector;
 
@@ -70,4 +70,8 @@ pub fn split_text_to_numbers(text: String, split_by: String) -> Result<Vec<usize
     }
 
     Ok(num_vec)
+}
+
+pub fn get_absolute_path(relative_path: String) -> String {
+    fs::canonicalize(PathBuf::from(relative_path)).unwrap().to_str().unwrap()[4..].to_string()
 }

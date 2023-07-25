@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use commands::{search::SearchCommand, Command};
+use commands::{Command, search::SearchCommand, download::DownloadCommand, help::HelpCommand};
 use once_cell::sync::Lazy;
 use utils::input;
 use state::State;
@@ -13,6 +13,7 @@ mod commands;
 static _STATE: Lazy<Mutex<State>> = Lazy::new(|| Mutex::new(State::new()));
 
 const VERSION: f32 = 2.0;
+const STEAMCMD_DIR: &str = r#"C:/Users/AJC/Desktop/steamcmd"#;
 
 fn main() {
     let mut looping = true;
@@ -28,10 +29,14 @@ fn main() {
                     Ok(res) => _STATE.lock().unwrap().add_ids(res.0, res.1)
                 }
             },
-            "exit" => {
-                looping = false;
-                return ()
+            "download" => {
+                let res = DownloadCommand::new(parsed_input).run();
+                println!("{}", res.unwrap());
             },
+            "help" => {
+                HelpCommand::new(parsed_input).run().unwrap();
+            },
+            "exit" => looping = false,
             _ => println!(">> Command <{}> not found.", parsed_input.command)
         };
     }

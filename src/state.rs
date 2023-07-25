@@ -3,8 +3,8 @@ use std::{collections::HashMap, fs::File, io::{Read, Write}};
 use crate::utils::clean_text;
 
 pub struct State {
-    ids_dict: HashMap<String, Vec<String>>,
-    aliases: HashMap<String, String>
+    pub ids_dict: HashMap<String, Vec<String>>,
+    pub aliases: HashMap<String, String>
 }
 
 impl State {
@@ -57,10 +57,6 @@ impl State {
 
         current_id_vec.sort_unstable();
         current_id_vec.dedup();
-
-        for x in current_id_vec.iter() {
-            println!("{}", x);
-        }
         
         let filtered_ids_len = current_id_vec.len();
         if original_ids_len > filtered_ids_len {

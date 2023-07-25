@@ -1,0 +1,3 @@
+login anonymous
+workshop_download_item 294100 1541620640
+quit

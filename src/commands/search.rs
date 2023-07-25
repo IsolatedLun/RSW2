@@ -11,7 +11,7 @@ pub struct SearchCommand {
     parsed_input: InputParser
 }
 
-impl Command<(String, Vec<String>)> for SearchCommand {
+impl Command<(String, Vec<String>), String> for SearchCommand {
     fn new(parsed_input: InputParser) -> Self {
         SearchCommand {
             parsed_input
