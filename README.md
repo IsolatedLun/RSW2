@@ -5,7 +5,7 @@ An open-source and script where you can search and download any workshop items/c
 ## Features
 
 - Download items
-- Download collections [WIP]
+- Download collections
 - Logging in to an account [WIP]
 
 ### What you can do

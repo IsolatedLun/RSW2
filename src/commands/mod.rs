@@ -9,4 +9,5 @@ pub trait Command<T, E> {
 
 pub mod search;
 pub mod download;
+pub mod collection;
 pub mod help;

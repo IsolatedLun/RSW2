@@ -5,7 +5,8 @@ use scraper::{Html, ElementRef};
 use crate::_STATE;
 use crate::cli::InputParser;
 use crate::commands::Command;
-use crate::utils::{fetch_page, create_search_url, create_selector, print_border, input, split_text_to_numbers};
+use crate::urls::create_search_url;
+use crate::utils::{create_selector, print_border, input, split_text_to_numbers, fetch_then_parse_html};
 
 pub struct SearchCommand {
     parsed_input: InputParser
@@ -38,20 +39,17 @@ impl Command<(String, Vec<String>), String> for SearchCommand {
             return Err(url.unwrap_err());
         }
         
-        let html: Result<Html, String> = match fetch_page(url.unwrap()) {
-            Ok(content) => Ok(scraper::Html::parse_document(&content)),
-            Err(e) => Err(e) 
-        };
-
+        let html: Result<Html, String> = fetch_then_parse_html(url.unwrap());
         if html.is_err() {
             return Err(html.unwrap_err());
         }
-        let html = html.unwrap();
 
+        let mut _state = _STATE.lock().unwrap();
+        let html = html.unwrap();
         let app_name_selector = create_selector(".apphub_AppName");
         let app_name: String = html.select(&app_name_selector).next().unwrap().text().collect();
         match self.parsed_input.args[0].chars().all(char::is_numeric) {
-            true => _STATE.lock().unwrap().set_alias(self.parsed_input.args[0].clone(), app_name),
+            true => _state.set_alias(self.parsed_input.args[0].clone(), app_name),
             false => ()
         };
         
@@ -61,7 +59,9 @@ impl Command<(String, Vec<String>), String> for SearchCommand {
 
         return match SearchCommand::select_ids(ids) {
             Err(e) => Err(e),
-            Ok(res) => Ok((self.parsed_input.args[0].clone(), res))
+            Ok(res) => Ok(
+                (_state.try_get_app_id(self.parsed_input.args[0].clone()).unwrap(), res)
+            )
         }
     }
 }

@@ -46,6 +46,13 @@ impl State {
         self.aliases.get(&name) 
     }
 
+    pub fn try_get_app_id(&mut self, app_id_or_name: String) -> Option<String> {
+        return match app_id_or_name.chars().all(char::is_numeric) {
+            true => Some(app_id_or_name),
+            false => self.get_alias(app_id_or_name).cloned(),
+        };
+    }
+
     pub fn add_ids(&mut self, app_id: String, ids: Vec<String>) {
         let selected_ids_len = ids.len();
         self.ids_dict.entry(app_id.clone()).or_insert(Vec::new()).extend(ids);
@@ -62,5 +69,10 @@ impl State {
         if original_ids_len > filtered_ids_len {
             println!(">> Removed {} duplicate(s)", original_ids_len - filtered_ids_len);
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.ids_dict.clear();
+        println!(">> Cleared all items")
     }
 }

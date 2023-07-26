@@ -32,10 +32,14 @@ impl RCommand<(), ()> for HelpCommand {
             "search", "[appAlias] [query]", "--pages [number]", "Search workshop items (sorted by top & most popular)"
         );
 
+        println!(
+            "{0: <30} | {1: <30} | {2: <30} | {3: <30}",
+            "collection", "[appAlias] [collectionId]", "-", "Adds all items of the collection"
+        );
 
         println!(
             "{0: <30} | {1: <30} | {2: <30} | {3: <30}",
-            "download", "-", "-", "Outputs data to output.txt and runs steamcmd runscript"
+            "clear", "-", "-", "Clears all items"
         );
 
         Ok(())

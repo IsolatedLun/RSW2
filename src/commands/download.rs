@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::{fs::File, io::Write};
 use std::process::Command;
 use std::vec;
@@ -37,15 +36,14 @@ impl RCommand<String, String> for DownloadCommand {
             .unwrap();
 
         let mut command = Command::new("cmd");
-        let temp_aliases: HashMap<String, String> = state.aliases.clone();
 
         writeln!(file, "login anonymous").unwrap();
-        for (app_name, ids) in state.ids_dict.iter() {
+        for (app_id, ids) in state.ids_dict.iter() {
             for id in ids.iter() {
                 writeln!(
                     file, 
                     "workshop_download_item {} {}",
-                    temp_aliases.get(app_name).unwrap().clone(), 
+                    app_id, 
                     id.clone()
                 ).unwrap();
             }

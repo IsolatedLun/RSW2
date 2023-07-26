@@ -1,8 +1,6 @@
-use std::{collections::HashMap, io::{stdout, stdin, Write}, path::PathBuf, fs};
+use std::{io::{stdout, stdin, Write}, path::PathBuf, fs};
 
 use scraper::Selector;
-
-use crate::_STATE;
 
 pub fn fetch_page(url: String) -> Result<String, String> {
     match reqwest::blocking::get(url) {
@@ -11,34 +9,21 @@ pub fn fetch_page(url: String) -> Result<String, String> {
     }
 }
 
-pub fn create_search_url(args: &Vec<String>, kwargs: &HashMap<String, String>) -> Result<String, String> {
-    let app_id_or_name = args[0].clone();
-    let search_text = args[1].clone();
-    let days = kwargs.get("--days").unwrap_or(&String::from("-1")).clone();
-    let page = kwargs.get("--page").unwrap_or(&String::from("1")).clone();
+pub fn parse_html(html: String) -> scraper::Html {
+    scraper::Html::parse_document(&html)
+}
 
-    let mut _state = _STATE.lock().unwrap();
-    let app_id: Option<&String> = match app_id_or_name.chars().all(char::is_numeric) {
-        true => Some(&app_id_or_name),
-        false => _state.get_alias(app_id_or_name.clone()),
-    };
-
-    if app_id.is_none() {
-        return Err(format!(">> Alias <{}> does not exist.", app_id_or_name));
+pub fn fetch_then_parse_html(url: String) -> Result<scraper::Html, String> {
+    return match fetch_page(url) {
+        Ok(content) => Ok(parse_html(content)),
+        Err(e) => Err(e)
     }
-
-    let url = format!(
-        "https://steamcommunity.com/workshop/browse/?appid={}&searchtext={}&days={}&p={}",
-        app_id.unwrap(), search_text, days, page
-    );
-
-    println!("{}", url);
-    Ok(url)
 }
 
 pub fn create_selector(selector: &str) -> Selector {
     scraper::Selector::parse(selector).unwrap()
 }
+
 
 pub fn print_border() {
     println!("{}", "=".repeat(16));
