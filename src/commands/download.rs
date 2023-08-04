@@ -36,8 +36,13 @@ impl RCommand<String, String> for DownloadCommand {
             .unwrap();
 
         let mut command = Command::new("cmd");
+        match self.get_credentials() {
+            Some(credentials) => writeln!(
+                file , "login {} {}", credentials.0, credentials.1
+            ),
+            None => writeln!(file, "login anonymous")
+        }.unwrap();
 
-        writeln!(file, "login anonymous").unwrap();
         for (app_id, ids) in state.ids_dict.iter() {
             for id in ids.iter() {
                 writeln!(
@@ -60,6 +65,23 @@ impl RCommand<String, String> for DownloadCommand {
         return match command.output() {
             Ok(_) => Ok(String::from(">> Downloaded items")),
             Err(e) => Err(format!(">> Failed downloading items: {}", e.to_string()))
+        }
+    }
+}
+
+impl DownloadCommand {
+    fn get_credentials(&self) -> Option<(String, String)> {
+        return match self.parsed_input.options.get("--u") {
+            Some(username) => {
+                let password = self.parsed_input.options.get("--p");
+                if password.is_none() {
+                    println!("Password for user <{}> not found", username);
+                    return None;
+                }
+
+                return Some((username.clone(), password.unwrap().clone()));
+            },
+            None => None
         }
     }
 }

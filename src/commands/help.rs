@@ -39,6 +39,11 @@ impl RCommand<(), ()> for HelpCommand {
 
         println!(
             "{0: <30} | {1: <30} | {2: <30} | {3: <30}",
+            "download", "-", "[--u Username] [--p Password]", "Downloads all items"
+        );
+
+        println!(
+            "{0: <30} | {1: <30} | {2: <30} | {3: <30}",
             "clear", "-", "-", "Clears all items"
         );
 
